@@ -47,10 +47,10 @@ def check_guess(guess, answer):
 
 	print_guess(guess, print_map)
 
-	return bad_chars
-
 	if guess == answer:
 		sys.exit('Correct!')
+
+	return bad_chars
 
 if __name__ == '__main__':
 
