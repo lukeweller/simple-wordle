@@ -27,8 +27,6 @@ def check_guess(guess, answer):
 	bad_chars = set()
 	print_map = []
 
-	print('\t ', end='')
-
 	for i in range(5):
 		if guess[i] == answer[i]:
 			answer_dict[guess[i]] -= 1
