@@ -120,6 +120,7 @@ if __name__ == '__main__':
 			word_list.append(line.rstrip())
 
 	answer = random.choice(word_list)
+
 	bad_chars = set()
 
 	for i in range(1,6):
@@ -134,5 +135,4 @@ if __name__ == '__main__':
 		cprint('\t\t{}'.format(''.join(sorted(bad_chars))), 'white', 'on_grey')
 
 	print('Answer:\t{}'.format(answer))
-
 	word_stats(answer)
