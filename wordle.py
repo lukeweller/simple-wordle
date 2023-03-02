@@ -1,7 +1,49 @@
 #!/usr/bin/env python3
-import sys, random
+import sys, random, requests, re, json
 from termcolor import colored, cprint
 from collections import defaultdict
+
+# Simple wrapper function that calls word_frequency_lookup() & word_definition_lookup()
+def word_stats(word):
+
+	word_frequency_lookup(word)
+	word_definition_lookup(word)
+
+def word_frequency_lookup(word):
+
+	start_year = 1800
+	end_year = 2019
+
+	response = requests.get('https://books.google.com/ngrams/graph?content={}&year_start={}&year_end={}&corpus=en-2019&smoothing=3'.format(word, start_year, end_year))
+
+	if response.status_code != 200:
+		sys.exit('error: google ngram viewer request failed - status: {}'.format(response.status_code))
+
+	response_html = response.text
+
+	timeseries_arr_string = re.search(r'\[([0-9].[0-9]+(e-[0-9]+)*,\s)+[0-9].[0-9]+(e-[0-9]+)*\]', response_html).group()
+
+	# Converts string formatted as an array to an actual array
+	timeseries_arr = [float(_.replace('[', '').replace(']', '')) for _ in timeseries_arr_string.split(', ')]
+
+	mean_popularity = sum(timeseries_arr)/len(timeseries_arr)
+	peak_popularity = max(timeseries_arr)
+	peak_popularity_year = start_year + timeseries_arr.index(peak_popularity)
+
+	print('Frequency:\tMean: {:.3e}, Peak: {:.3e}, Peak Year: {}'.format(mean_popularity, peak_popularity, peak_popularity_year))
+
+def word_definition_lookup(word):
+
+	response = requests.get('https://api.dictionaryapi.dev/api/v2/entries/en/{}'.format(word))
+
+	if response.status_code != 200:
+		sys.exit('error: free dictionary api request failed - status: {}'.format(response.status_code))
+
+	response_json = json.loads(response.text)[0]
+
+	definition = response_json['meanings'][0]['definitions'][0]['definition']
+
+	print('Definition:\t{}'.format(definition))
 
 def print_guess(guess, print_map):
 
@@ -64,6 +106,7 @@ def check_guess(guess, answer):
 
 	if guess == answer:
 		print('\tCorrect!')
+		word_stats(answer)
 		sys.exit(0)
 
 	return bad_chars
@@ -77,6 +120,7 @@ if __name__ == '__main__':
 			word_list.append(line.rstrip())
 
 	answer = random.choice(word_list)
+	answer = 'guess'
 
 	bad_chars = set()
 
@@ -91,4 +135,6 @@ if __name__ == '__main__':
 
 		cprint('\t\t{}'.format(''.join(sorted(bad_chars))), 'white', 'on_grey')
 
-	print('Answer:  {}'.format(answer))
+	print('Answer:\t{}'.format(answer))
+
+	word_stats(answer)
