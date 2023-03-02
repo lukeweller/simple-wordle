@@ -120,8 +120,6 @@ if __name__ == '__main__':
 			word_list.append(line.rstrip())
 
 	answer = random.choice(word_list)
-	answer = 'guess'
-
 	bad_chars = set()
 
 	for i in range(1,6):
