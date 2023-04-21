@@ -35,13 +35,22 @@ def word_frequency_lookup(word):
 def word_definition_lookup(word):
 
 	response = requests.get('https://api.dictionaryapi.dev/api/v2/entries/en/{}'.format(word))
+	response_json = json.loads(response.text)
 
 	if response.status_code != 200:
-		sys.exit('error: free dictionary api request failed - status: {}'.format(response.status_code))
+		if response_json['title'] == "No Definitions Found":
+			print('Definition:\tN/A')
+			return
+		else:
+			sys.exit('error: free dictionary api request failed - status: {}'.format(response.status_code))
 
-	response_json = json.loads(response.text)[0]
-
-	definition = response_json['meanings'][0]['definitions'][0]['definition']
+	# When a word is found in the dictionary, response_json is structured as a list w/
+	# one dict item.  response_json[0] grabs the actual dict. response_json[0]['meanings']
+	# is a list where each item corresponds to a defintion for the word.  
+	# response_json[0]['meanings'][0] grabs the first (most common) defintion for 
+	# simplicity's sake.  For example, 'clean' returns 4 definitions (noun, verb, etc.)
+	# We grab the first one, which corresponds to its use as a noun.
+	definition = response_json[0]['meanings'][0]['definitions'][0]['definition']
 
 	print('Definition:\t{}'.format(definition))
 
